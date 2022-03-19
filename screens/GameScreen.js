@@ -9,24 +9,31 @@ function GameScreen({ navigation }) {
         ['', '', ''],
     ]);
 
+    const [turn, setTurn] = useState('x');
+    const [countx, setCountX] = useState(0);
+    const [counto, setCountO] = useState(0);
+    const [gameMode, setGameMode] = useState("LOCAL");
+
     const copyArray = (original) => {
         const copy = JSON.parse(JSON.stringify(original));
         return copy;
     }
 
-    const [turn, setTurn] = useState('x');
-    const [count, setCount] = useState(0);
-
     useEffect(() => {
-        if(turn ==='o'){
+        if(turn ==='o' && gameMode !== 'LOCAL'){
             bot();
         }
-    }, [turn]);
+    }, [turn, gameMode]);
 
     useEffect(() => {
         const winner = winState(map);
-        if (winner) {
+        if (winner === 'x') {
           gameWon(winner);
+          setCountX(countx+1)
+        }
+        if(winner === 'o'){
+          gameWon(winner);
+          setCountO(counto+1)
         }
       }, [map]);
 
@@ -114,10 +121,10 @@ function GameScreen({ navigation }) {
         ]);
          setTurn('')
             if(turn === ''){
-               setCount(count);
+               setCountX(countx);
+               setCountO(counto);
             }
             else{
-               setCount(count + 1)
                setTimeout(() => {
                reset();
                }, 300);
@@ -135,7 +142,8 @@ function GameScreen({ navigation }) {
     };
 
     const resetPoint = () => {
-        setCount(0);
+        setCountX(0);
+        setCountO(0);
     };
 
     const bot = () => {
@@ -148,28 +156,10 @@ function GameScreen({ navigation }) {
             });
         });
 
-        let chosenOption;
-
-              if (!chosenOption) {
-                positionsPossible.forEach((positionsPossible) => {
-                  const mapCopy = copyArray(map);
-
-                  mapCopy[positionsPossible.row][positionsPossible.col] = "x";
-
-                  const winner = winState(mapCopy);
-                  if (winner === "x") {
-                    chosenOption = positionsPossible;
-                    setTurn('x')
-                  }
-                });
-              }
-
-        if(!chosenOption){
-            chosenOption = positionsPossible[Math.floor(Math.random() * positionsPossible.length)];
-        }
+        let chosenOption = positionsPossible[Math.floor(Math.random() * positionsPossible.length)];
 
         if(chosenOption){
-        //Włącz albo wyłącz bota
+        //Włącz albo wyłącz bota xd
         setTimeout(() => {
         onPress(chosenOption.row, chosenOption.col);
         },300);
@@ -192,8 +182,11 @@ function GameScreen({ navigation }) {
     <View style={styles.viewW}>
     <Button onPress={() => resetPoint()} title='Reset Your Points' color='#663d00'> </Button>
     </View>
-    <Text style={styles.countText}> YOUR POINTS: {count} </Text>
-    <Text style={styles.currentText}> CURRENT TURN: {turn} </Text>
+    <View style={styles.countPoints}>
+    <Text style={styles.countText}> POINTS X: {countx} </Text>
+    <Text style={styles.countText}> POINTS O: {counto} </Text>
+    <Text style={styles.countText}> CURRENT TURN: {turn} </Text>
+    </View>
     <ImageBackground source={require('../img/bck3.png')} style={{width: '100%', height: '83%', alignItems:'center', marginTop:-30, justifyContent:'center'}} resizeMode='contain'>
         <View style={styles.map}>
         {map.map((row, rowIndex) => (
@@ -214,6 +207,16 @@ function GameScreen({ navigation }) {
         </View>
         ))}
         </View>
+    <View style={styles.buttonBot}>
+              <Text onPress={() => setGameMode("LOCAL")} style={[styles.textBot,
+              {backgroundColor: gameMode === "LOCAL" ? "#4F4676" : "#663d00" },]}>
+                Local
+              </Text>
+              <Text onPress={() => setGameMode("BOT")} style={[styles.textBot,
+              {backgroundColor: gameMode === "BOT" ? "#4F4676" : "#663d00",},]}>
+                Bot
+              </Text>
+            </View>
     </ImageBackground>
     </View>
     </ImageBackground>
@@ -282,19 +285,25 @@ const styles = StyleSheet.create({
            width:400,
            height:50,
        },
+       countPoints:{
+           flexDirection:'row',
+           marginTop:-6,
+       },
        countText:{
            color:'white',
            fontSize:15,
-           marginLeft:48,
+           padding:10,
+           marginLeft:5,
+           textTransform: 'uppercase',
        },
        viewW:{
-           marginTop:1,
+           marginTop:5,
        },
        view11:{
            backgroundColor:'#663d00',
            width:'100%',
            height:40,
-           marginBottom:1,
+           marginBottom:5,
            justifyContent:'center',
        },
        text:{
@@ -302,13 +311,19 @@ const styles = StyleSheet.create({
            fontSize:20,
            textAlign:'center',
       },
-      currentText:{
+      buttonBot:{
+           position:'absolute',
+           bottom:70,
+           flexDirection:'row',
+      },
+      textBot:{
            color:'white',
-           marginLeft:215,
-           fontSize:15,
-           marginTop:-20,
-           textTransform: 'uppercase',
-      }
+           margin:20,
+           width:90,
+           height:25,
+           fontSize:16,
+           textAlign:'center',
+      },
 })
 
 export default GameScreen;
